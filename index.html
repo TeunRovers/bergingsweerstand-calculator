@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bergingsweerstand Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-image: url('image.png'); /* Vervang 'image.png' door de juiste achtergrondafbeelding */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white; /* Tekstkleur */
+        }
+        .container {
+            background-color: rgba(0, 0, 0, 0.7); /* Zwarte transparante laag voor leesbaarheid */
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: auto;
+        }
+        h2, h3 {
+            color: #ff0000; /* Brandweer rode kleur voor titels */
+            text-align: center;
+        }
+        label, input, select {
+            margin: 10px 0;
+            display: block;
+            font-size: 16px;
+        }
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        input[type="text"].readonly {
+            background-color: #f0f0f0;
+            color: black;
+        }
+        button {
+            background-color: #ff0000; /* Brandweer rode knop */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+        .memory-reminder {
+            margin-top: 20px;
+            font-style: italic;
+            background-color: rgba(255, 255, 255, 0.5); /* Transparante witte achtergrond */
+            padding: 10px;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Bergingsweerstand Calculator</h2>
+
+    <section>
+        <h3>Invoergegevens defect voertuig</h3>
+        <label for="voertuigGewicht">Gewicht defect voertuig in kg:</label>
+        <input type="number" id="voertuigGewicht" name="voertuigGewicht" required>
+
+        <label for="ondergrondVoertuig">Ondergrond defect voertuig:</label>
+        <select id="ondergrondVoertuig" name="ondergrondVoertuig">
+            <option value="25">Verharde weg (25)</option>
+            <option value="7">Gras / heide (7)</option>
+            <option value="5">Grind / puin (5)</option>
+            <option value="4">Zand (4)</option>
+            <option value="3">Modder (3)</option>
+            <option value="2">Zware modder (2)</option>
+            <option value="1">Moeras (1)</option>
+        </select>
+
+        <label for="hellingshoek">Hellingshoek (wanneer hellingshoek hoger is dan 60 graden, vul dan 60 graden in):</label>
+        <input type="number" id="hellingshoek" name="hellingshoek" oninput="validateHellingshoek()" required>
+    </section>
+
+    <section>
+        <h3>Invoergegevens bergingsvoertuig</h3>
+        <label for="gewichtBergingsvoertuig">Gewicht bergingsvoertuig in kg:</label>
+        <input type="number" id="gewichtBergingsvoertuig" name="gewichtBergingsvoertuig" required>
+
+        <label for="ondergrondBergingsvoertuig">Ondergrond bergingsvoertuig:</label>
+        <select id="ondergrondBergingsvoertuig" name="ondergrondBergingsvoertuig">
+            <option value="25">Verharde weg (25)</option>
+            <option value="7">Gras / heide (7)</option>
+            <option value="5">Grind / puin (5)</option>
+            <option value="4">Zand (4)</option>
+            <option value="3">Modder (3)</option>
+            <option value="2">Zware modder (2)</option>
+            <option value="1">Moeras (1)</option>
+        </select>
+
+        <label for="ankerwaardeBoom">Ankerwaarde boom <span>(laten staan als geen boom gebruikt wordt, geen invloed op andere berekeningen)</span>:</label>
+        <select id="ankerwaardeBoom" name="ankerwaardeBoom">
+            <option value="5">Eik / beuk (5)</option>
+            <option value="3">Kastanje (3)</option>
+            <option value="2">Den (2)</option>
+        </select>
+
+        <label for="diameterBoom">Diameter boom in cm:</label>
+        <input type="number" id="diameterBoom" name="diameterBoom" required>
+
+        <label for="lierkracht">Lierkracht capaciteit in kg:</label>
+        <input type="number" id="lierkracht" name="lierkracht" required>
+
+        <button onclick="bereken()">Bereken</button>
+    </section>
+
+    <section>
+        <h3>Berekening en Formules</h3>
+
+        <label for="rolweerstand">Rolweerstand (harde weg):</label>
+        <input type="text" id="rolweerstand" class="readonly" readonly>
+
+        <label for="schuifweerstandHardeWeg">Schuifweerstand (harde weg):</label>
+        <input type="text" id="schuifweerstandHardeWeg" class="readonly" readonly>
+
+        <label for="schuifweerstandTerrein">Schuifweerstand (terrein):</label>
+        <input type="text" id="schuifweerstandTerrein" class="readonly" readonly>
+
+        <label for="hellingsweerstand">Hellingsweerstand:</label>
+        <input type="text" id="hellingsweerstand" class="readonly" readonly>
+
+        <label for="kantelweerstandLaag">Kantelweerstand (laag zwaartepunt):</label>
+        <input type="text" id="kantelweerstandLaag" class="readonly" readonly>
+
+        <label for="kantelweerstandHoog">Kantelweerstand (hoog zwaartepunt):</label>
+        <input type="text" id="kantelweerstandHoog" class="readonly" readonly>
+
+        <div class="memory-reminder">
+            <strong>Geheugensteun:</strong><br>
+            1 Ton = 10 kN = 1000 kg <br>
+            100 kg = 1 kN = 0,1 Ton
+        </div>
+    </section>
+
+    <section>
+        <h3>Uitkomsten ten behoeve van berging</h3>
+
+        <label for="rollendVoertuig">Rollend voertuig slepen (totale weerstand):</label>
+        <input type="text" id="rollendVoertuig" class="readonly" readonly>
+
+        <label for="geblokkeerdVoertuig">Geblokkeerd voertuig slepen:</label>
+        <input type="text" id="geblokkeerdVoertuig" class="readonly" readonly>
+
+        <label for="rollendVoertuigHelling">Rollend voertuig tegen helling op slepen:</label>
+        <input type="text" id="rollendVoertuigHelling" class="readonly" readonly>
+
+        <label for="geblokkeerdVoertuigHelling">Geblokkeerd voertuig tegen helling op slepen:</label>
+        <input type="text" id="geblokkeerdVoertuigHelling" class="readonly" readonly>
+
+        <label for="ankerwaardeBergingsvoertuig">Ankerwaarde bergingsvoertuig:</label>
+        <input type="text" id="ankerwaardeBergingsvoertuig" class="readonly" readonly>
+
+        <label for="ankerwaardeBoom">Ankerwaarde boom (laag bij de grond):</label>
+        <input type="text" id="ankerwaardeBoomUitkomst" class="readonly" readonly>
+    </section>
+</div>
+
+<script>
+function validateHellingshoek() {
+    const hellingshoek = parseFloat(document.getElementById('hellingshoek').value);
+    if (hellingshoek > 60) {
+        document.getElementById('hellingshoek').value = 60;
+        alert("Hellingshoek kan niet hoger zijn dan 60 graden. De waarde is nu op 60 gezet.");
+    } else if (hellingshoek < 0 || isNaN(hellingshoek)) {
+        alert("Hellingshoek moet tussen 0 en 60 graden liggen.");
+    }
+}
+
+function bereken() {
+    // Haal de nodige invoerwaarden op
+    const voertuigGewicht = parseFloat(document.getElementById('voertuigGewicht').value);
+    const ondergrondVoertuig = parseFloat(document.getElementById('ondergrondVoertuig').value);
+    const hellingshoek = parseFloat(document.getElementById('hellingshoek').value);
+
+    // Berekeningen voor de formules
+    const rolweerstand = Math.round(voertuigGewicht / ondergrondVoertuig);  
+    const schuifweerstandHardeWeg = Math.round(voertuigGewicht * 0.8);  
+    const schuifweerstandTerrein = Math.round((voertuigGewicht * 2) / ondergrondVoertuig);  
+    const hellingsweerstand = Math.round((voertuigGewicht * hellingshoek) / 60);  // Correcte hellingsweerstand berekening
+    const kantelweerstandLaag = Math.round(voertuigGewicht / 2);  
+    const kantelweerstandHoog = Math.round(voertuigGewicht);  
+
+    // Toon de resultaten zonder decimalen
+    document.getElementById('rolweerstand').value = rolweerstand + " kg";
+    document.getElementById('schuifweerstandHardeWeg').value = schuifweerstandHardeWeg + " kg";
+    document.getElementById('schuifweerstandTerrein').value = schuifweerstandTerrein + " kg";
+    document.getElementById('hellingsweerstand').value = hellingsweerstand + " kg";
+    document.getElementById('kantelweerstandLaag').value = kantelweerstandLaag + " kg";
+    document.getElementById('kantelweerstandHoog').value = kantelweerstandHoog + " kg";
+
+    // Bereken de uitkomsten na de formules
+    berekenUitkomsten();
+}
+
+function berekenUitkomsten() {
+    // Haal de nodige invoerwaarden op voor de bergingsuitkomsten
+    const rolweerstand = parseFloat(document.getElementById('rolweerstand').value);
+    const schuifweerstandHardeWeg = parseFloat(document.getElementById('schuifweerstandHardeWeg').value);
+    const schuifweerstandTerrein = parseFloat(document.getElementById('schuifweerstandTerrein').value);
+    const hellingsweerstand = parseFloat(document.getElementById('hellingsweerstand').value);
+    const gewichtBergingsvoertuig = parseFloat(document.getElementById('gewichtBergingsvoertuig').value);
+    const ondergrondBergingsvoertuig = parseFloat(document.getElementById('ondergrondBergingsvoertuig').value);
+    const ankerwaardeBoom = parseFloat(document.getElementById('ankerwaardeBoom').value);
+    const diameterBoom = parseFloat(document.getElementById('diameterBoom').value);
+
+    // Berekeningen van de uitkomsten
+    const rollendVoertuig = Math.round(rolweerstand * 1.25);  // Rollend voertuig slepen (totale weerstand)
+    const geblokkeerdVoertuig = Math.round(schuifweerstandHardeWeg * 1.25);  // Geblokkeerd voertuig slepen
+    const rollendVoertuigHelling = Math.round((rolweerstand + hellingsweerstand) * 1.25);  // Rollend voertuig tegen helling op slepen
+    const geblokkeerdVoertuigHelling = Math.round((schuifweerstandTerrein + hellingsweerstand) * 1.25);  // Geblokkeerd voertuig tegen helling op slepen
+    const ankerwaardeBergingsvoertuig = Math.round((gewichtBergingsvoertuig * 1.5) / ondergrondBergingsvoertuig);  // Ankerwaarde bergingsvoertuig
+    const ankerwaardeBoomUitkomst = Math.round(ankerwaardeBoom * diameterBoom * diameterBoom);  // Ankerwaarde boom
+
+    // Toon de resultaten in de invoervelden met "kg"
+    document.getElementById('rollendVoertuig').value = rollendVoertuig + " kg";
+    document.getElementById('geblokkeerdVoertuig').value = geblokkeerdVoertuig + " kg";
+    document.getElementById('rollendVoertuigHelling').value = rollendVoertuigHelling + " kg";
+    document.getElementById('geblokkeerdVoertuigHelling').value = geblokkeerdVoertuigHelling + " kg";
+    document.getElementById('ankerwaardeBergingsvoertuig').value = ankerwaardeBergingsvoertuig + " kg";
+    document.getElementById('ankerwaardeBoomUitkomst').value = ankerwaardeBoomUitkomst + " kg";
+}
+</script>
+
+</body>
+</html>
